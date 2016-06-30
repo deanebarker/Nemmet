@@ -16,7 +16,7 @@ Use with caution.
 	var tags = NemmetTag.Parse(code);
 
     // To get the HTML as a string
-    var html = NemmetTag.GetHtml(code)
+    var html = NemmetParser.GetHtml(code)
 
 Result:
 
