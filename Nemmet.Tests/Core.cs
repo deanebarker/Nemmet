@@ -88,7 +88,7 @@ namespace Nemmet.Tests
 
         private IHtmlDocument GetParsedDoc(string code)
         {
-            var html = NemmetTag.GetHtml(code);
+            var html = NemmetParser.GetHtml(code);
             Debug.WriteLine(html);
             var parser = new HtmlParser();
             return parser.Parse(html);
