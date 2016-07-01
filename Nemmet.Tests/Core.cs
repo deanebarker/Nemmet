@@ -54,9 +54,15 @@ namespace Nemmet.Tests
         }
 
         [TestMethod]
-        public void InnerHtml()
+        public void ElementContent()
         {
             Assert.IsTrue(GetTrimmedElementContent("div{content}", "div") == "content");
+        }
+
+        [TestMethod]
+        public void ElementContentWithOperators()
+        {
+            Assert.IsTrue(CheckForElement("parent{2+2>3}>child", "parent>child"));
         }
 
         [TestMethod]

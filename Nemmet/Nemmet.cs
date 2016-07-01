@@ -34,6 +34,8 @@ namespace Nemmet
         private const string ID_CLASS_PATTERN = @"[#\.][^{#\.]*";
         private const string NONWORD_PATTERN = @"\W";
         private const string SPACE = " ";
+        private const char OPEN_CURLEY_BRACE = '{';
+        private const char CLOSING_CURLEY_BRACE = '}';
 
         public static List<NemmetTag> Parse(string code)
         {
@@ -48,12 +50,20 @@ namespace Nemmet
             // We track the last tag added, so we can climb-up to its parent, if we need to
             NemmetTag lastTag = null;
 
+            // We'll keep track if we're in a quote or not
+            var inBraces = false;
+
             // Iterate through each character
             var buffer = new StringBuilder();
             foreach (var character in string.Concat(code, SIBLING_OPERATOR))
             {
+                if(character == OPEN_CURLEY_BRACE || character == CLOSING_CURLEY_BRACE)
+                {
+                    inBraces = !inBraces;
+                }
+
                 // Is this an operator?
-                if (string.Concat(SIBLING_OPERATOR,CHILD_OPERATOR,CLIMBUP_OPERATOR).Contains(character))
+                if (string.Concat(SIBLING_OPERATOR,CHILD_OPERATOR,CLIMBUP_OPERATOR).Contains(character) && !inBraces)
                 {
                     // We have encountered an operator, which means whatever is in the buffer represents a single tag
                     // We need to...
