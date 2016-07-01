@@ -20,14 +20,25 @@ namespace Nemmet
         static NemmetParsingOptions()
         {
             ResetToDefaults();
+            DefaultTag = "div";
+            DefaultTagMap = new Dictionary<string, string>()
+            {
+                { "table", "tr" },
+                { "tr", "td" },
+            };
         }
 
         public static void ResetToDefaults()
         {
-            AlwaysLowerCaseTagName = true; ;
+            AlwaysLowerCaseTagName = true;
+
         }
 
         public static bool AlwaysLowerCaseTagName { get; set; }
+
+        public static Dictionary<string,string> DefaultTagMap { get; set; }
+
+        public static string DefaultTag { get; set; }
     }
 
     public class NemmetTag
@@ -82,7 +93,7 @@ namespace Nemmet
                     // We have encountered an operator, which means whatever is in the buffer represents a single tag
                     // We need to...
                     // 1. Create this tag
-                    // 2. Evaluate the operator to determine where the NEXT tag will go (by resetting the activeTag)
+                    // 2. Evaluate the operator to determine where the NEXT tag will go by manipulating the tagStack)
 
                     // If there's anything in the buffer, process it as a new child of the context tag
                     // (If you're climbing up more than one level at a time ("^^") there might not be anything in the buffer.)
@@ -90,6 +101,15 @@ namespace Nemmet
                     if (buffer.Length > 0)
                     {
                         tag = new NemmetTag(buffer.ToString());
+
+                        // If the name is empty, then name this based on the defaults
+                        // (I can't do this inside of NemmetTag, because it requires access to the prior tag...)
+                        if(string.IsNullOrWhiteSpace(tag.Name))
+                        {
+                            tag.Name = NemmetParsingOptions.DefaultTagMap.ContainsKey(tagStack.Peek().Name) ? NemmetParsingOptions.DefaultTagMap[tagStack.Peek().Name] : NemmetParsingOptions.DefaultTag;
+                        }
+
+                        // Add this to the top tag on the stack
                         tagStack.Peek().Children.Add(tag);
 
                         // We empty the buffer so we can start accumulating the next tag
@@ -104,13 +124,13 @@ namespace Nemmet
                         // Do nothing. This is just for clarity.
                     }
 
-                    // Climbing up. Remove the top tag, to reveal its parent underneath.
+                    // Climb up. Remove the top tag, to reveal its parent underneath.
                     if (character == CLIMBUP_OPERATOR)
                     {
                         tagStack.Pop();
                     }
 
-                    // Descending. Add this tag to the stack.
+                    // Descend. Add this tag to the top of stack.
                     if (character == CHILD_OPERATOR)
                     {
                         tagStack.Push(tag);
@@ -134,6 +154,7 @@ namespace Nemmet
 
             // The incoming text string should represent THIS TAG ONLY.  The string should NOT have any operators in it. It should be the configuration this tag only.
 
+            // The name is everything before the first non-word character
             Name = token.GetBefore(NONWORD_PATTERN);
             if(NemmetParsingOptions.AlwaysLowerCaseTagName)
             {

@@ -16,7 +16,8 @@ namespace Nemmet.Tests
         These tests generate HTML from Nemmet code, then parse that HTML using AngleSharp and test for the elements.
         The tests are not against the resulting string, but rather the resulting DOM.
 
-        Also, we add a root tag called "root" to everything, so we can accurately test for elements on the top level.
+        Also, we add a root tag called "root" to everything, so we can accurately test for elements on the top level.        
+        Therefore, AngleSharp paths have to be from the "root" tag, down through every child.
         
         */
 
@@ -24,6 +25,19 @@ namespace Nemmet.Tests
         public void Element()
         {
             Assert.IsTrue(CheckForElement("div", "div"));
+        }
+
+        [TestMethod]
+        public void DefaultElement()
+        {
+            Assert.IsTrue(CheckForElement(".class", "div"));
+        }
+
+        [TestMethod]
+        public void DefaultElementsFromParent()
+        {
+            // Note: this one can be tricky, because AngleSharp adds an assumed TBODY inside the TABLE
+            Assert.IsTrue(CheckForElement("table.table>.row>.cell", "table>tbody>tr>td"));
         }
 
         [TestMethod]
