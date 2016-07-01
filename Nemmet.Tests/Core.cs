@@ -25,6 +25,20 @@ namespace Nemmet.Tests
         }
 
         [TestMethod]
+        public void LowerCaseElementName()
+        {
+            // This is the default
+            var elementNameShouldBeLowerCase = NemmetTag.Parse("DIV");
+            Assert.AreEqual("div", elementNameShouldBeLowerCase[0].Name);
+
+            // This is after setting the option
+            NemmetParsingOptions.AlwaysLowerCaseTagName = false;
+            var elementNameShouldBeUpperCase = NemmetTag.Parse("DIV");
+            Assert.AreEqual("DIV", elementNameShouldBeUpperCase[0].Name);
+            NemmetParsingOptions.ResetToDefaults();
+        }
+
+        [TestMethod]
         public void SiblingOperator()
         {
             Assert.IsTrue(CheckForElement("one+two", "one+two"));

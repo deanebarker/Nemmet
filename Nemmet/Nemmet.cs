@@ -15,6 +15,21 @@ namespace Nemmet
         }
     }
 
+    public static class NemmetParsingOptions
+    {
+        static NemmetParsingOptions()
+        {
+            ResetToDefaults();
+        }
+
+        public static void ResetToDefaults()
+        {
+            AlwaysLowerCaseTagName = true; ;
+        }
+
+        public static bool AlwaysLowerCaseTagName { get; set; }
+    }
+
     public class NemmetTag
     {
         public string Name { get; set; }
@@ -114,15 +129,19 @@ namespace Nemmet
         
         public NemmetTag(NemmetTag parent, string token)
         {
-            // The incoming text string should represent THIS TAG ONLY.  The string should NOT have any operators in it. It should be the configuration this tag only.
-
-            Parent = parent;
-
             Classes = new List<string>();
             Children = new List<NemmetTag>();
             Attributes = new Dictionary<string, string>();
 
+            Parent = parent;
+
+            // The incoming text string should represent THIS TAG ONLY.  The string should NOT have any operators in it. It should be the configuration this tag only.
+
             Name = token.GetBefore(NONWORD_PATTERN);
+            if(NemmetParsingOptions.AlwaysLowerCaseTagName)
+            {
+                Name = Name.ToLower();
+            }
 
             // Tag content
             foreach (Match subtoken in Regex.Matches(token, CONTENT_PATTERN))
