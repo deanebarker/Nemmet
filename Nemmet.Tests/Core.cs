@@ -77,6 +77,20 @@ namespace Nemmet.Tests
         }
 
         [TestMethod]
+        public void MultipleClassAndIdAttributes()
+        {
+            var code1 = "div#id.class1.class2";
+            Assert.IsTrue(CheckForElement(code1, "div#id"));
+            Assert.IsTrue(CheckForElement(code1, "div.class1"));
+            Assert.IsTrue(CheckForElement(code1, "div.class2"));
+
+            var code2 = "div.class1.#id.class2";
+            Assert.IsTrue(CheckForElement(code2, "div#id"));
+            Assert.IsTrue(CheckForElement(code2, "div.class1"));
+            Assert.IsTrue(CheckForElement(code2, "div.class2"));
+        }
+
+        [TestMethod]
         public void Content()
         {
             Assert.IsTrue(GetTrimmedElementContent("div{content}", "div") == "content");
