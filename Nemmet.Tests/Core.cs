@@ -9,6 +9,15 @@ namespace Nemmet.Tests
     [TestClass]
     public class Core
     {
+        /*
+
+        A note on testing methodology --
+
+        These tests generate HTML from Nemmet code, then parse that HTML using AngleSharp and test for the elements.
+        The tests are not against the resulting string, but rather the resulting DOM.
+        
+        */
+
         [TestMethod]
         public void Element()
         {
@@ -16,19 +25,19 @@ namespace Nemmet.Tests
         }
 
         [TestMethod]
-        public void SiblingElements()
+        public void SiblingOperator()
         {
             Assert.IsTrue(CheckForElement("one+two", "one+two"));
         }
 
         [TestMethod]
-        public void NestedElements()
+        public void ChildOperator()
         {
             Assert.IsTrue(CheckForElement("parent>child", "parent>child"));
         }
 
         [TestMethod]
-        public void ParentElements()
+        public void ClimbUpOperator()
         {
             Assert.IsTrue(CheckForElement("parent>child1>grandchild^child2", "parent>child2"));
         }
@@ -54,19 +63,19 @@ namespace Nemmet.Tests
         }
 
         [TestMethod]
-        public void ElementContent()
+        public void Content()
         {
             Assert.IsTrue(GetTrimmedElementContent("div{content}", "div") == "content");
         }
 
         [TestMethod]
-        public void ElementContentWithOperators()
+        public void ContentWithOperators()
         {
             Assert.IsTrue(CheckForElement("parent{2+2>3}>child", "parent>child"));
         }
 
         [TestMethod]
-        public void Attribute()
+        public void SingleAttribute()
         {
             Assert.IsTrue(CheckForElement("div[key=value]", "div[key=value]"));
         }
@@ -90,7 +99,6 @@ namespace Nemmet.Tests
             Assert.IsTrue(GetElement(code, "div.grandchild2").Attributes["key"].Value == "value");
             Assert.IsTrue(CheckForElement(code, "div.parent2>div#child3"));
         }
-
 
         private IHtmlDocument GetParsedDoc(string code)
         {
