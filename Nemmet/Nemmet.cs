@@ -51,34 +51,33 @@ namespace Nemmet
         private const string SPACE = " ";
         private const char OPEN_CURLEY_BRACE = '{';
         private const char CLOSING_CURLEY_BRACE = '}';
+        private const char OPEN_PARAN = '(';
+        private const char CLOSE_PARAN = ')';
 
         public static List<NemmetTag> Parse(string code)
         {
             // This returns a List<NemmetTag> because there could be multiple top-level tags ("tag1+tag2+tag3"). We can't assume this HTML fragment will be well-formed.
 
-            // This is a "fake" tag, to which we'll add other tags. At the end of the parse, we'll return the children of this.
-            var activeTag = new NemmetTag(null, string.Empty);
+            // The top tag on this stack represents the tag to which new tags will be added as children. We put an empty placeholder in there to initialize it.
+            var tagStack = new Stack<NemmetTag>();
+            tagStack.Push(new NemmetTag("root"));
 
-            // Keep a separate reference to the starting tag, so we can find our way back to it easily (we could crawl up from whatever tag we ended on, but this is easier...)
-            var root = activeTag;
-
-            // We track the last tag added, so we can climb-up to its parent, if we need to
-            NemmetTag lastTag = null;
-
-            // We'll keep track if we're in a quote or not
+            // We'll keep track if we're in a brace or not to determine whether something is an actual operator or just text content
             var inBraces = false;
 
             // Iterate through each character
+            // We add the sibling operator to the end to make sure the last tag gets added (remember, we only process the buffer when we encouter an operator, so we need to make sure there's a final operator on the end)
             var buffer = new StringBuilder();
-            foreach (var character in string.Concat(code, SIBLING_OPERATOR))
+            foreach(var character in string.Concat(code, SIBLING_OPERATOR))
             {
+                // Toggle the braces indicator so we know if something is an operator of just content
                 if(character == OPEN_CURLEY_BRACE || character == CLOSING_CURLEY_BRACE)
                 {
                     inBraces = !inBraces;
                 }
 
-                // Is this an operator?
-                if (string.Concat(SIBLING_OPERATOR,CHILD_OPERATOR,CLIMBUP_OPERATOR).Contains(character) && !inBraces)
+                // Is this an operator that is NOT contained in a brace?
+                if (string.Concat(SIBLING_OPERATOR,CHILD_OPERATOR,CLIMBUP_OPERATOR,OPEN_PARAN).Contains(character) && !inBraces)
                 {
                     // We have encountered an operator, which means whatever is in the buffer represents a single tag
                     // We need to...
@@ -87,11 +86,11 @@ namespace Nemmet
 
                     // If there's anything in the buffer, process it as a new child of the context tag
                     // (If you're climbing up more than one level at a time ("^^") there might not be anything in the buffer.)
+                    NemmetTag tag = null;
                     if (buffer.Length > 0)
                     {
-                        var tag = new NemmetTag(activeTag, buffer.ToString());
-                        activeTag.Children.Add(tag);
-                        lastTag = tag;
+                        tag = new NemmetTag(buffer.ToString());
+                        tagStack.Peek().Children.Add(tag);
 
                         // We empty the buffer so we can start accumulating the next tag
                         buffer.Clear();
@@ -99,22 +98,22 @@ namespace Nemmet
 
                     // Now, what do we do with the NEXT tag?
 
-                    // The next tag should be added to the same active tag as the last one.
-                    if(character == SIBLING_OPERATOR)
+                    // The next tag should be added to the same tag as the last one.
+                    if (character == SIBLING_OPERATOR)
                     {
                         // Do nothing. This is just for clarity.
                     }
 
-                    // Climbing up. The next tag should be added to the parent of the last tag.
+                    // Climbing up. Remove the top tag, to reveal its parent underneath.
                     if (character == CLIMBUP_OPERATOR)
                     {
-                        activeTag = activeTag.Parent;
+                        tagStack.Pop();
                     }
 
-                    // Descending. The next tag should be added as a child of the last tag we added.
+                    // Descending. Add this tag to the stack.
                     if (character == CHILD_OPERATOR)
                     {
-                        activeTag = lastTag;
+                        tagStack.Push(tag);
                     }
                 }
                 else
@@ -123,17 +122,15 @@ namespace Nemmet
                 }
             }
 
-            // The root tag is empty -- remember, we just added it as a placeholder. We want to return the top-level children of it.
-            return root.Children;
+            // The base tag in the stack was just a placeholder, remember. We want to return the top-level children of that.
+            return tagStack.Last().Children;
         }
         
-        public NemmetTag(NemmetTag parent, string token)
+        public NemmetTag(string token)
         {
             Classes = new List<string>();
             Children = new List<NemmetTag>();
             Attributes = new Dictionary<string, string>();
-
-            Parent = parent;
 
             // The incoming text string should represent THIS TAG ONLY.  The string should NOT have any operators in it. It should be the configuration this tag only.
 
@@ -183,7 +180,7 @@ namespace Nemmet
             var name = Name;
             if (Classes.Any())
             {
-                name = string.Concat(name, ".", Classes.JoinOn(SPACE));
+                name = string.Concat(name, ".", Classes.JoinOn("."));
             }
             return name;
         }

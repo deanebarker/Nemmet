@@ -15,6 +15,8 @@ namespace Nemmet.Tests
 
         These tests generate HTML from Nemmet code, then parse that HTML using AngleSharp and test for the elements.
         The tests are not against the resulting string, but rather the resulting DOM.
+
+        Also, we add a root tag called "root" to everything, so we can accurately test for elements on the top level.
         
         */
 
@@ -54,6 +56,13 @@ namespace Nemmet.Tests
         public void ClimbUpOperator()
         {
             Assert.IsTrue(CheckForElement("parent>child1>grandchild^child2", "parent>child2"));
+        }
+
+
+        [TestMethod]
+        public void ConsecutiveClimbUpOperators()
+        {
+            Assert.IsTrue(CheckForElement("parent1>child>grandchild^^parent2", "parent2"));
         }
 
         [TestMethod]
@@ -123,14 +132,22 @@ namespace Nemmet.Tests
             var code = "div.parent1>div.child1>div.grandchild1{content}+div.grandchild2[key=value]^^div.parent2>div.child2+div#child3";
             Assert.IsTrue(CheckForElement(code, "div.parent1>div.child1"));
             Assert.IsTrue(CheckForElement(code, "div.parent2"));
-            Assert.IsTrue(GetTrimmedElementContent(code, "div.grandchild1") == "content");
+            Assert.IsTrue(GetTrimmedElementContent(code, "div.parent1>div.child1>div.grandchild1") == "content");
             Assert.IsTrue(GetElement(code, "div.grandchild2").Attributes["key"].Value == "value");
             Assert.IsTrue(CheckForElement(code, "div.parent2>div#child3"));
         }
 
+        //[TestMethod]
+        //public void Parenthetical()
+        //{
+        //    var code = "parent1>(child1>child2)+parent2";
+        //    Assert.IsTrue(CheckForElement(code, "parent1>parent2"));
+        //    Assert.IsTrue(CheckForElement(code, "parent1>child1>child2"));
+        //}
+
         private IHtmlDocument GetParsedDoc(string code)
         {
-            var html = NemmetParser.GetHtml(code);
+            var html = NemmetParser.GetHtml(string.Concat("root>", code));
             Debug.WriteLine(html);
             var parser = new HtmlParser();
             return parser.Parse(html);
@@ -138,7 +155,7 @@ namespace Nemmet.Tests
 
         private string GetTrimmedElementContent(string code, string path)
         {
-            return GetParsedDoc(code).QuerySelector(path).InnerHtml.Trim();
+            return GetParsedDoc(code).QuerySelector(string.Concat("root>", path)).InnerHtml.Trim();
         }
 
         private IHtmlElement GetElement(string code, string path)
@@ -148,7 +165,7 @@ namespace Nemmet.Tests
 
         private bool CheckForElement(string code, string path)
         {
-            return GetParsedDoc(code).QuerySelectorAll(path).Length == 1;
+            return GetParsedDoc(code).QuerySelectorAll(string.Concat("root>", path)).Length == 1;
 
         }
 
