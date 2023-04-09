@@ -1,10 +1,9 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using AngleSharp.Parser.Html;
+using AngleSharp.Html.Dom;
+using AngleSharp.Html.Parser;
+using DeaneBarker;
 using System.Diagnostics;
-using AngleSharp.Dom.Html;
 
-namespace Nemmet.Tests
+namespace Tests
 {
     [TestClass]
     public class Core
@@ -38,20 +37,6 @@ namespace Nemmet.Tests
         {
             // Note: this one can be tricky, because AngleSharp adds an assumed TBODY inside the TABLE
             Assert.IsTrue(CheckForElement("table.table>.row>.cell", "table>tbody>tr>td"));
-        }
-
-        [TestMethod]
-        public void LowerCaseElementName()
-        {
-            // This is the default
-            var elementNameShouldBeLowerCase = NemmetTag.Parse("DIV");
-            Assert.AreEqual("div", elementNameShouldBeLowerCase[0].Name);
-
-            // This is after setting the option
-            NemmetParsingOptions.AlwaysLowerCaseTagName = false;
-            var elementNameShouldBeUpperCase = NemmetTag.Parse("DIV");
-            Assert.AreEqual("DIV", elementNameShouldBeUpperCase[0].Name);
-            NemmetParsingOptions.ResetToDefaults();
         }
 
         [TestMethod]
@@ -151,20 +136,12 @@ namespace Nemmet.Tests
             Assert.IsTrue(CheckForElement(code, "div.parent2>div#child3"));
         }
 
-        //[TestMethod]
-        //public void Parenthetical()
-        //{
-        //    var code = "parent1>(child1>child2)+parent2";
-        //    Assert.IsTrue(CheckForElement(code, "parent1>parent2"));
-        //    Assert.IsTrue(CheckForElement(code, "parent1>child1>child2"));
-        //}
-
         private IHtmlDocument GetParsedDoc(string code)
         {
-            var html = NemmetParser.GetHtml(string.Concat("root>", code));
+            var html = Nemmet.ToHtml(string.Concat("root>", code));
             Debug.WriteLine(html);
             var parser = new HtmlParser();
-            return parser.Parse(html);
+            return parser.ParseDocument(html);
         }
 
         private string GetTrimmedElementContent(string code, string path)
