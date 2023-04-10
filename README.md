@@ -7,10 +7,10 @@ Nemmet is an homage to [Emmet](http://emmet.io/) (Nemmet = "Not Emmet"...get it?
     var code = "div#my-panel.panel > div.heading{Title} + div.content{Content} + div.footer";
 
     // To get the HTML as a string (which just concats the results of ToHtml())
-    var html = Nemmet.TotHtml(code)
+    var html = NemmetParser.TotHtml(code)
 
     // To get a root tag object with recursive children (each of which has a ToHtml method)
-    var html = Nemmet.Parse(code)
+    var html = NemmetParser.Parse(code)
 
 Result:
 
@@ -57,7 +57,7 @@ This executes on every tag immediately before it runs `ToHtml`. The tag which is
 
 ```
 // Replace FONT tags with styled SPANs
-Nemmet.OutputProcessor = (t) =>
+NemmetParser.OutputProcessor = (t) =>
 {
   // A font tag? Really...?
   if (t.Name == "font")
@@ -80,7 +80,7 @@ These execute before content is added. The content from the code is passed in. I
 ```
 // Get content from a dictionary of values
 // Something like html>body>main{@body}
-Nemmet.ContentProccesor = c =>
+NemmetParser.ContentProccesor = c =>
 {  
   if(c == null)
   {
