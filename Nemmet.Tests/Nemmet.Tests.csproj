@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AngleSharp" Version="1.0.2-alpha-278" />
+    <PackageReference Include="AngleSharp" Version="1.0.1" />
     <PackageReference Include="AngleSharp.Css" Version="0.17.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0" />
     <PackageReference Include="MSTest.TestAdapter" Version="2.2.8" />

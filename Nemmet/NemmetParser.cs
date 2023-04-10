@@ -1,23 +1,18 @@
 ﻿using Parlot.Fluent;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using static Parlot.Fluent.Parsers;
 
-namespace DeaneBarker
+namespace DeaneBarker.Nemmet
 {
-
-    public class Nemmet
+    public class NemmetParser
     {
-        private static Parser<List<Tag>> parser;
+        private static readonly Parser<List<Tag>> parser;
 
         // Processors
         public static Func<Tag, Tag> OutputProcessor { get; set; }
         public static Func<string, string> PreProcessor { get; set; } = DefaultPreprocessor;
         public static Func<string, string> ContentProccesor { get; set; }
 
-
-        static Nemmet()
+        static NemmetParser()
         {
             // Constants / helpers
             var dot = Literals.Char('.');
@@ -82,7 +77,7 @@ namespace DeaneBarker
                 .And(ZeroOrMany(tagAttributes)) // Item2 (list)
                 .And(ZeroOrOne(content)) // Item3
                 .And(ZeroOrOne(next)) // Item4
-                .Then<Tag>(v =>
+                .Then(v =>
                 {
                     var tag = new Tag()
                     {
@@ -112,9 +107,9 @@ namespace DeaneBarker
             return Organize(GetTags(code)).ToString();
         }
 
-        public static Tag Organize(List<Tag> items, Tag currentTag = null)
+        public static Tag Organize(List<Tag> items, Tag? currentTag = null)
         {
-            currentTag = currentTag ?? new Tag(); // A tag without a name doesn't render, it just contains
+            currentTag ??= new Tag(); // A tag without a name doesn't render, it just contains
 
             foreach (var item in items)
             {
@@ -156,5 +151,4 @@ namespace DeaneBarker
             return code;
         }
     }
-
 }

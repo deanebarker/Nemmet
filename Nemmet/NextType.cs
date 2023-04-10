@@ -1,4 +1,4 @@
-﻿namespace DeaneBarker
+﻿namespace DeaneBarker.Nemmet
 {
     public enum NextType
     {

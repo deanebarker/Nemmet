@@ -1,31 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
 
-namespace DeaneBarker
+namespace DeaneBarker.Nemmet
 {
     public class Tag
     {
-        private static string[] singular = new[] { "br", "hr", "img", "meta", "link" };
+        // Public so it can be modified if absolutely necessary
+        public static string[] Singular = new[] { "br", "hr", "img", "meta", "link" };
 
-        public string Source { get; set; }
-
-        public Tag Parent { get; set; }
+        public Tag? Parent { get; set; }
         public List<Tag> Children = new();
 
         public List<Attribute> Attributes = new();
 
-        public string Name { get; set; }
-        public string Content { get; set; }
+        public string? Name { get; set; }
+        public string? Content { get; set; }
 
-        public NextType ExitPath { get; set; }
+        public NextType? ExitPath { get; set; }
 
         public override string ToString()
         {
             // Process the tag
-            var tag = Nemmet.OutputProcessor != null ? Nemmet.OutputProcessor(this) : this;
+            var tag = NemmetParser.OutputProcessor != null ? NemmetParser.OutputProcessor(this) : this;
 
             var childrenHtml = string.Join(string.Empty, tag.Children.Select(t => t.ToString()));
             if (string.IsNullOrWhiteSpace(tag.Name))
@@ -36,33 +31,33 @@ namespace DeaneBarker
             }
 
             var sb = new StringBuilder();
-            sb.Append("<");
+            sb.Append('<');
             sb.Append(tag.Name.ToLower());
 
             if (tag.Attributes.Count > 0)
             {
-                sb.Append(" ");
+                sb.Append(' ');
             }
 
             sb.Append(string.Join(' ', tag.Attributes.Select(a => a.ToString())));
 
-            if (singular.Contains(tag.Name))
+            if (Singular.Contains(tag.Name))
             {
                 sb.Append("/>");
                 return sb.ToString();
             }
 
-            sb.Append(">");
+            sb.Append('>');
 
             sb.Append(childrenHtml);
 
             // Process the content
-            var content = Nemmet.ContentProccesor != null ? Nemmet.ContentProccesor(this.Content) : this.Content;
+            var content = NemmetParser.ContentProccesor != null ? NemmetParser.ContentProccesor(Content) : Content;
             sb.Append(content ?? string.Empty);
 
             sb.Append("</");
             sb.Append(tag.Name.ToLower());
-            sb.Append(">");
+            sb.Append('>');
 
             return sb.ToString();
         }

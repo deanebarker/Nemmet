@@ -1,9 +1,8 @@
 using AngleSharp.Html.Dom;
 using AngleSharp.Html.Parser;
-using DeaneBarker;
 using System.Diagnostics;
 
-namespace Tests
+namespace DeaneBarker.Nemmet
 {
     [TestClass]
     public class Core
@@ -138,7 +137,7 @@ namespace Tests
 
         private IHtmlDocument GetParsedDoc(string code)
         {
-            var html = Nemmet.ToHtml(string.Concat("root>", code));
+            var html = NemmetParser.ToHtml(string.Concat("root>", code));
             Debug.WriteLine(html);
             var parser = new HtmlParser();
             return parser.ParseDocument(html);
